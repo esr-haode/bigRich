@@ -114,6 +114,13 @@ const stage = $('stage');
 const sctx = stage.getContext('2d');
 const view = { x: BOARD_PX / 2, y: BOARD_PX / 2, zoom: 0.72, tx: BOARD_PX / 2, ty: BOARD_PX / 2, tz: 0.72, follow: true };
 
+/* 相机移动边界限制 */
+const VIEW_MARGIN = 200; // 允许超出棋盘的边距（像素）
+function clampView() {
+  view.tx = clamp(view.tx, -VIEW_MARGIN, BOARD_PX + VIEW_MARGIN);
+  view.ty = clamp(view.ty, -VIEW_MARGIN, BOARD_PX + VIEW_MARGIN);
+}
+
 function resizeStage() {
   const r = stage.parentElement.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
@@ -137,6 +144,7 @@ stage.addEventListener('pointermove', e => {
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (Math.abs(dx) + Math.abs(dy) > 4) { drag.moved = true; view.follow = false; }
     view.tx -= dx / view.zoom; view.ty -= dy / view.zoom;
+    clampView();
     drag.x = e.clientX; drag.y = e.clientY;
   }
 });
@@ -361,6 +369,7 @@ function loop(ts) {
       view.tx = r.x + CELL / 2; view.ty = r.y + CELL / 2;
     }
   }
+  clampView();
   const k = 1 - Math.pow(0.001, dt / 1000);
   view.x += (view.tx - view.x) * k;
   view.y += (view.ty - view.y) * k;
