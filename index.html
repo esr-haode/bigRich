@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大发地产 · 经典大富翁</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ====== 开局：设置界面 ====== -->
+<div id="setup-modal" class="modal-mask hidden">
+  <div class="setup-box">
+    <h1 class="game-title">大发地产 · 经典大富翁</h1>
+    <p class="setup-sub">2 ~ 8 位玩家 · 支持人机对战 · 本地自动存档</p>
+
+    <div class="setup-row">
+      <span class="setup-label">玩家人数</span>
+      <div id="player-count" class="seg"></div>
+    </div>
+    <div id="player-configs" class="player-configs"></div>
+
+    <div class="setup-actions">
+      <button id="btn-start" class="btn btn-primary btn-big">开 始 游 戏</button>
+    </div>
+    <p class="setup-tip">提示：默认 1 号玩家为人类，可自行改为「人机」。</p>
+  </div>
+</div>
+
+<!-- ====== 恢复存档询问 ====== -->
+<div id="resume-modal" class="modal-mask hidden">
+  <div class="resume-box">
+    <div class="resume-icon">💾</div>
+    <h2>检测到未完成的游戏</h2>
+    <p id="resume-info" class="resume-info"></p>
+    <div class="setup-actions">
+      <button id="btn-resume" class="btn btn-primary btn-big">继 续 游 戏</button>
+      <button id="btn-newgame" class="btn btn-ghost btn-big">新 开 一 局</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 主界面 ====== -->
+<div id="app" class="app hidden">
+
+  <!-- 顶栏 -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-logo">🎲</span>
+      <span class="brand-name">大发地产</span>
+    </div>
+    <div id="turn-banner" class="turn-banner">
+      <span id="turn-dot" class="turn-dot"></span>
+      <span id="turn-text">等待开局</span>
+    </div>
+    <div class="topbar-actions">
+      <button id="btn-menu" class="btn btn-ghost" title="打开菜单">☰ 菜单</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- 左侧：玩家面板 -->
+    <aside class="panel panel-left">
+      <h3 class="panel-title">玩家 & 财富榜</h3>
+      <div id="player-list" class="player-list"></div>
+      <div class="panel-actions">
+        <button id="btn-roll" class="btn btn-primary btn-roll">掷 骰 子</button>
+      </div>
+      <div class="quick-stats">
+        <div class="stat"><span class="stat-label">回合</span><span id="stat-round" class="stat-value">1</span></div>
+        <div class="stat"><span class="stat-label">奖金池</span><span id="stat-pot" class="stat-value">¥0</span></div>
+      </div>
+    </aside>
+
+    <!-- 中间：主画布 -->
+    <main class="stage-wrap">
+      <canvas id="stage" class="stage"></canvas>
+      <div id="tile-tip" class="tile-tip hidden"></div>
+      <div class="stage-hint">拖动平移 · 滚轮缩放 · 双击归位到当前玩家</div>
+    </main>
+
+    <!-- 右侧：小地图 + 日志 -->
+    <aside class="panel panel-right">
+      <h3 class="panel-title">小地图</h3>
+      <div class="minimap-wrap">
+        <canvas id="minimap" class="minimap" width="260" height="260"></canvas>
+        <div class="minimap-hint">点击小地图快速移动视角</div>
+      </div>
+      <h3 class="panel-title">土地 & 建造 <span class="panel-sub">(点击自己地块建房)</span></h3>
+      <div id="estate-list" class="estate-list"></div>
+      <h3 class="panel-title">事件日志</h3>
+      <div id="log-box" class="log-box"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- ====== 事件弹窗（购买 / 出狱 / 卡片 / 结算 / 游戏结束） ====== -->
+<div id="dialog-modal" class="modal-mask hidden">
+  <div id="dialog-box" class="dialog-box"></div>
+</div>
+
+<!-- 菜单抽屉 -->
+<div id="menu-drawer" class="menu-drawer hidden">
+  <div class="menu-item" id="menu-restart">🔄 重新开始（清空存档）</div>
+  <div class="menu-item" id="menu-save">💾 立即保存</div>
+  <div class="menu-item" id="menu-wipe">🗑 清空存档并回到开局设置</div>
+  <div class="menu-item menu-close" id="menu-close">✕ 关闭</div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
