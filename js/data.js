@@ -1,43 +1,50 @@
 /* ===== 数据：棋盘 / 卡片 / 棋子 ===== */
 
-// 格子类型：go 起点 | prop 地产 | chance 机会 | fate 命运 | tax 税收 | station 车站
-//           jailVisit 探监 | jailGo 进监狱 | rest 监狱停留中 | free 免费停车(奖金池)
+// 格子类型：go 起点 | prop 街区 | chance 机会 | fate 命运 | tax 税收 | station 车站
+//           utility 公用事业 | jailVisit 探监 | jailGo 进监狱 | free 免费停车(奖金池)
+// 经典 40 格顺序：GO 右下角起逆时针（底边向左）→ 经典 Monopoly 排布
 const BOARD = [
   { t:'go',      name:'起点',   en:'GO',          desc:'经过或停留 +¥2,000' },
-  { t:'prop',    name:'南郊',   group:'棕',  price:600,  color:'#955436' },
+  { t:'prop',    name:'地中海大道', group:'棕',  price:600,  color:'#955436' },
   { t:'chance',  name:'机会',   en:'CHANCE' },
-  { t:'prop',    name:'葡萄藤', group:'棕',  price:1000, color:'#955436' },
+  { t:'prop',    name:'波罗的海大道', group:'棕', price:600, color:'#955436' },
   { t:'tax',     name:'所得税', taxType:'income' },
-  { t:'station', name:'第一车站', price:2000 },
-  { t:'prop',    name:'波罗的', group:'蓝',  price:1400, color:'#aae0fa' },
-  { t:'fate',    name:'命运',   en:'FATE' },
-  { t:'prop',    name:'东方区', group:'蓝',  price:1800, color:'#aae0fa' },
-  { t:'rest',    name:'监狱 · 探监', en:'JAIL',   desc:'只是路过，自由身' },
-  { t:'prop',    name:'佛蒙特', group:'粉',  price:2200, color:'#d93a96' },
-  { t:'prop',    name:'康涅狄格', group:'粉', price:2600, color:'#d93a96' },
-  { t:'prop',    name:'圣查尔斯', group:'粉', price:3000, color:'#d93a96' },
-  { t:'station', name:'第二车站', price:2000 },
-  { t:'prop',    name:'州际大道', group:'橙',  price:3400, color:'#f79428' },
-  { t:'prop',    name:'弗吉尼亚', group:'橙',  price:3800, color:'#f79428' },
+  { t:'station', name:'阅读车站', price:2000 },
+  { t:'prop',    name:'东方大道', group:'蓝',  price:1000, color:'#aae0fa' },
   { t:'chance',  name:'机会',   en:'CHANCE' },
-  { t:'prop',    name:'圣詹姆斯', group:'橙',  price:4200, color:'#f79428' },
+  { t:'prop',    name:'佛蒙特大道', group:'蓝', price:1000, color:'#aae0fa' },
+  { t:'prop',    name:'康涅狄格大道', group:'蓝', price:1200, color:'#aae0fa' },
+  { t:'rest',    name:'监狱 · 探监', en:'JAIL', desc:'只是路过，自由身' },
+  { t:'prop',    name:'圣查尔斯广场', group:'粉', price:1400, color:'#d93a96' },
+  { t:'utility', name:'电力公司', price:2500 },
+  { t:'prop',    name:'州大道', group:'粉',  price:1400, color:'#d93a96' },
+  { t:'prop',    name:'弗吉尼亚大道', group:'粉', price:1600, color:'#d93a96' },
+  { t:'station', name:'宾夕法尼亚车站', price:2000 },
+  { t:'prop',    name:'圣詹姆斯广场', group:'橙', price:2000, color:'#f79428' },
+  { t:'fate',    name:'命运',   en:'FATE' },
+  { t:'prop',    name:'田纳西大道', group:'橙', price:2000, color:'#f79428' },
+  { t:'prop',    name:'纽约大道', group:'橙',  price:2200, color:'#f79428' },
   { t:'free',    name:'免费停车', en:'FREE PARK', desc:'可拿走累积奖金池' },
-  { t:'prop',    name:'田纳西', group:'红',  price:4600, color:'#ed1b24' },
-  { t:'fate',    name:'命运',   en:'FATE' },
-  { t:'prop',    name:'纽约大道', group:'红',  price:5000, color:'#ed1b24' },
+  { t:'prop',    name:'肯塔基大道', group:'红', price:2600, color:'#ed1b24' },
   { t:'chance',  name:'机会',   en:'CHANCE' },
-  { t:'prop',    name:'肯塔基', group:'红',  price:5400, color:'#ed1b24' },
-  { t:'station', name:'第三车站', price:2000 },
-  { t:'prop',    name:'伊利诺伊', group:'黄',  price:6000, color:'#fef200' },
-  { t:'prop',    name:'印第安纳', group:'黄',  price:6600, color:'#fef200' },
-  { t:'tax',     name:'奢侈税', taxType:'luxury' },
-  { t:'prop',    name:'大西洋', group:'黄',  price:7200, color:'#fef200' },
+  { t:'prop',    name:'印第安纳大道', group:'红', price:2800, color:'#ed1b24' },
+  { t:'prop',    name:'伊利诺伊大道', group:'红', price:3000, color:'#ed1b24' },
+  { t:'station', name:'B&O 车站', price:2000 },
+  { t:'prop',    name:'大西洋大道', group:'黄', price:3200, color:'#fef200' },
+  { t:'prop',    name:'文特诺大道', group:'黄', price:3400, color:'#fef200' },
+  { t:'utility', name:'自来水厂', price:2500 },
+  { t:'prop',    name:'马文花园', group:'黄',  price:3600, color:'#fef200' },
   { t:'jailGo',  name:'进监狱', en:'GO TO JAIL', desc:'立即入狱' },
-  { t:'prop',    name:'太平洋', group:'绿',  price:8000, color:'#1fb25a' },
-  { t:'prop',    name:'五月花', group:'绿',  price:8800, color:'#1fb25a' }
+  { t:'prop',    name:'太平洋大道', group:'绿', price:4000, color:'#1fb25a' },
+  { t:'prop',    name:'北卡罗来纳大道', group:'绿', price:4000, color:'#1fb25a' },
+  { t:'fate',    name:'命运',   en:'FATE' },
+  { t:'prop',    name:'宾夕法尼亚大道', group:'绿', price:4200, color:'#1fb25a' },
+  { t:'station', name:'短途车站', price:2000 },
+  { t:'chance',  name:'机会',   en:'CHANCE' },
+  { t:'prop',    name:'公园广场', group:'深蓝', price:5000, color:'#0072bb' },
+  { t:'tax',     name:'奢侈税', taxType:'luxury' },
+  { t:'prop',    name:'海滨步道', group:'深蓝', price:5500, color:'#0072bb' }
 ];
-
-// 修正手误后的地图数据无需运行时补丁（下方保留健壮性检查）
 
 // 房间租金倍率与造价
 const HOUSES = { costFactor: 0.5, max: 3, mult: [1, 2, 3.5, 5] }; // 有全色组时倍率翻倍
@@ -86,12 +93,12 @@ const FATE_CARDS = [
   { text:'去监狱探监朋友，直接进监狱',                     gotoJail: true },
   { text:'坐高铁去起点度假，领取工资',                     moveTo: 0, goSalary: true },
   { text:'走错方向，后退 4 格',                            moveSteps: -4 },
-  { text:'人生赢家，直接前进到「免费停车」',                moveTo: 19 },
+  { text:'人生赢家，直接前进到「免费停车」',                moveTo: 20 },
   { text:'请在场所有玩家喝一杯，每人收你 ¥150 → 奖金池',   payAll: 150 },
   { text:'替邻居代收了快递费，获得 ¥400',                  cash: 400 }
 ];
 
 // 棋盘尺寸
-const GRID = 9;              // 9x9
-const CELL = 150;            // 每格像素
+const GRID = 11;             // 11x11
+const CELL = 140;            // 每格像素
 const BOARD_PX = GRID * CELL;

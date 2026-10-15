@@ -10,16 +10,18 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 const SAVE_KEY = 'bigrich_save_v2';
 
-/* ---------- 棋盘布局：9x9 外环恰 32 格，逆时针，起点在右下 ---------- */
-// 右列 9 格 : i 0..8  -> col=8, row = 8-i      （起点在右下角，向上走）
-// 顶行 8 格 : i 9..16 -> col = 16-i, row = 0   （从 col7 向左到 col0）
-// 左列 8 格 : i 17..24-> col=0, row = i-16     （从 row1 向下到 row8）
-// 底行 7 格 : i 25..31-> col = i-24, row = 8   （从 col1 向右到 col7，接回起点）
+/* ---------- 棋盘布局：11x11 外环恰 40 格，GO 右下角逆时针（底边向左） ---------- */
+// 底行 11 格 : i 0..10 -> col = 10-i, row = 10   （GO 右下 → 探监 左下）
+// 左列 9 格  : i 11..19-> col=0, row = 20-i     （row9..row1）
+// 顶行 10 格 : i 20..29-> col = i-20, row = 0   （免费停车 col0 → col9）
+// 右上角 1 格: i 30     -> col=10, row = 0      （进监狱）
+// 右列 9 格  : i 31..39-> col=10, row = i-30    （row1..row9，接回起点）
 function tilePos(i) {
-  if (i <= 8)  return { col: 8, row: 8 - i };
-  if (i <= 16) return { col: 16 - i, row: 0 };
-  if (i <= 24) return { col: 0, row: i - 16 };
-  return { col: i - 24, row: 8 };
+  if (i <= 10) return { col: 10 - i, row: 10 };
+  if (i <= 19) return { col: 0, row: 20 - i };
+  if (i <= 29) return { col: i - 20, row: 0 };
+  if (i <= 30) return { col: 10, row: 0 };
+  return { col: 10, row: i - 30 };
 }
 function tileRect(i) {
   const p = tilePos(i);
@@ -30,7 +32,7 @@ function tileName(i) { return BOARD[i].name; }
 /* 色条贴中心侧 */
 function colorBarSide(i) {
   const { col, row } = tilePos(i);
-  if (col === 8) return 'left';
+  if (col === 10) return 'left';
   if (col === 0) return 'right';
   if (row === 0) return 'bottom';
   return 'top';
@@ -115,7 +117,7 @@ const sctx = stage.getContext('2d');
 const view = { x: BOARD_PX / 2, y: BOARD_PX / 2, zoom: 0.72, tx: BOARD_PX / 2, ty: BOARD_PX / 2, tz: 0.72, follow: true };
 
 /* 相机移动边界限制 */
-const VIEW_MARGIN = 200; // 允许超出棋盘的边距（像素）
+const VIEW_MARGIN = 50; // 允许超出棋盘的边距（像素）
 function clampView() {
   view.tx = clamp(view.tx, -VIEW_MARGIN, BOARD_PX + VIEW_MARGIN);
   view.ty = clamp(view.ty, -VIEW_MARGIN, BOARD_PX + VIEW_MARGIN);
@@ -203,11 +205,11 @@ function drawTile(i, ctx) {
   ctx.fillStyle = '#3a2f1d';
   ctx.textAlign = 'center';
 
-  if (b.t === 'prop' || b.t === 'station') {
+  if (b.t === 'prop' || b.t === 'station' || b.t === 'utility') {
     // 色条
     const side = colorBarSide(i);
     const bw = Math.max(14, 22 * view.zoom);
-    ctx.fillStyle = b.t === 'prop' ? b.color : '#6b7280';
+    ctx.fillStyle = b.t === 'prop' ? b.color : b.t === 'station' ? '#6b7280' : '#0ea5e9';
     if (side === 'left')   ctx.fillRect(x, y, bw, h);
     if (side === 'right')  ctx.fillRect(x + w - bw, y, bw, h);
     if (side === 'top')    ctx.fillRect(x, y, w, bw);
@@ -220,7 +222,7 @@ function drawTile(i, ctx) {
     wrapText(ctx, b.name, cx, cy - 6, w - 8, 15, 2);
     ctx.font = `600 ${Math.max(10, 11.5)}px sans-serif`;
     ctx.fillStyle = '#8a6b3d';
-    ctx.fillText(b.t === 'prop' ? fmt(b.price) : '过路费', cx, cy + 14);
+    ctx.fillText(b.t === 'prop' ? fmt(b.price) : b.t === 'station' ? '过路费' : '水电费', cx, cy + 14);
     // 房子
     const houses = op ? (op.props[i] || 0) : 0;
     if (houses > 0) {
@@ -411,7 +413,7 @@ function drawMinimap() {
   for (let i = 0; i < BOARD.length; i++) {
     const { col, row } = tilePos(i);
     const b = BOARD[i];
-    mctx.fillStyle = b.t === 'prop' ? b.color : b.t === 'station' ? '#9aa3ad' : '#f3ecd9';
+    mctx.fillStyle = b.t === 'prop' ? b.color : b.t === 'station' ? '#9aa3ad' : b.t === 'utility' ? '#38bdf8' : '#f3ecd9';
     mctx.fillRect(col * c + 1, row * c + 1, c - 2, c - 2);
   }
   if (state) {
@@ -444,7 +446,7 @@ function totalAssets(p) {
   let v = p.cash;
   Object.keys(p.props).forEach(k => {
     const idx = Number(k), b = BOARD[idx];
-    if (!b || b.t !== 'prop' && b.t !== 'station') return;
+    if (!b || (b.t !== 'prop' && b.t !== 'station' && b.t !== 'utility')) return;
     v += b.price + (p.props[k] || 0) * Math.round(b.price * HOUSES.costFactor);
   });
   return v;
@@ -537,6 +539,13 @@ function rentOf(idx) {
     BOARD.forEach((bb, i) => { if (bb.t === 'station' && state.owners[i] === ownerId) n++; });
     return STATION_RENT[clamp(n - 1, 0, 3)];
   }
+  if (b.t === 'utility') {
+    // 经典规则：租金 = 最近一次骰点总和 ×（1 家 ×4 / 2 家 ×10）
+    let n = 0;
+    BOARD.forEach((bb, i) => { if (bb.t === 'utility' && state.owners[i] === ownerId) n++; });
+    const mult = n >= 2 ? 10 : 4;
+    return (state.lastRoll || 7) * mult;
+  }
   return 0;
 }
 
@@ -568,7 +577,7 @@ function renderTip() {
   if (found < 0) { tip.classList.add('hidden'); return; }
   const t = BOARD[found], lines = [];
   lines.push(`<div class="tt-name">${t.name}</div>`);
-  if (t.t === 'prop' || t.t === 'station') {
+  if (t.t === 'prop' || t.t === 'station' || t.t === 'utility') {
     lines.push(`<div class="tt-row"><span>购入价</span><b>${fmt(t.price)}</b></div>`);
     lines.push(`<div class="tt-row"><span>当前租金</span><b>${fmt(rentOf(found))}</b></div>`);
     const oid = state.owners[found];
@@ -640,6 +649,7 @@ function doRoll() {
     if (ticks >= 8) {
       clearInterval(anim);
       const steps = state.dice[0] + state.dice[1];
+      state.lastRoll = steps;
       addLog(`🎲 ${p.name} 掷出 ${state.dice[0]} + ${state.dice[1]} = ${steps} 点`, 'gold');
       startWalk(p, steps);
     }
@@ -681,7 +691,7 @@ function landing(p) {
 
 function resolveTile(p, i) {
   const b = BOARD[i];
-  if (b.t === 'prop' || b.t === 'station') {
+  if (b.t === 'prop' || b.t === 'station' || b.t === 'utility') {
     const oid = state.owners[i];
     if (oid == null) {
       if (p.cash >= b.price) {
@@ -704,7 +714,7 @@ function resolveTile(p, i) {
   }
   switch (b.t) {
     case 'tax':
-      let tax = b.taxType === 'income' ? clamp(Math.floor(p.cash * 0.1), 200, 2000) : 750;
+      let tax = b.taxType === 'income' ? clamp(Math.floor(p.cash * 0.1), 200, 2000) : 1000;
       tax = Math.min(tax, p.cash);
       p.cash -= tax; state.pot += tax;
       addLog(`💸 ${p.name} 缴纳${b.name} ${fmt(tax)}（进入奖金池）`, 'bad');
@@ -793,7 +803,7 @@ function maybeAI() {
   const p = cp();
   if (!p || !p.isAI || p.bankrupt) return;
   state.phase = 'ai';
-  setTimeout(() => aiStep(), 850);
+  setTimeout(() => aiStep(), 600);
 }
 
 /* ---------- AI ---------- */
@@ -855,7 +865,7 @@ function showBuyDialog(i) {
     <div class="dlg-sub">${p.name} 停在「${b.name}」</div>
     <div class="card-face" style="background:${b.color}22;border-color:${b.color}">
       <div style="font-size:18px">${b.name}</div>
-      <div style="font-size:13px;margin-top:4px">购入价 ${fmt(b.price)} · 无房租金 ${fmt(Math.round(b.price * 0.1))}</div>
+      <div style="font-size:13px;margin-top:4px">购入价 ${fmt(b.price)} · ${b.t === 'utility' ? '水电费 = 骰点×4' : b.t === 'station' ? '车站过路费' : '无房租金'} ${b.t === 'prop' ? fmt(Math.round(b.price * 0.1)) : b.t === 'station' ? '300 起' : ''}</div>
     </div>
     <div class="dlg-detail">
       <div class="drow"><span>当前现金</span><b>${fmt(p.cash)}</b></div>
@@ -1150,7 +1160,7 @@ function resolveStanding(p) {
   if (!p || p.bankrupt || state.phase === 'over') return;
   if (p.inJail) { state.phase = 'dialog'; showJailDialog(); return; }
   const i = p.pos, b = BOARD[i];
-  if (b.t === 'prop' || b.t === 'station') {
+  if (b.t === 'prop' || b.t === 'station' || b.t === 'utility') {
     const oid = state.owners[i];
     if (oid == null && p.cash >= b.price) { showBuyDialog(i); return; }
   }
