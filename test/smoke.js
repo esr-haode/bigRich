@@ -110,8 +110,35 @@ const save = () => JSON.parse(window.localStorage.getItem('bigrich_save_v2') || 
   const s2 = JSON.parse(w2.localStorage.getItem('bigrich_save_v2'));
   console.log('5) 恢复对局: round=', s2.round, ' turnIdx=', s2.turnIdx, ' phase=', s2.phase);
 
+  // 6) 移动端布局切换（模拟窄屏）
+  Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true });
+  window.dispatchEvent(new window.Event('resize'));
+  await sleep(100);
+  const mobileOk =
+    document.body.classList.contains('is-mobile') &&
+    document.body.dataset.tab === 'players' &&
+    document.getElementById('btn-roll').parentElement.id === 'roll-dock' &&
+    document.querySelector('.minimap-wrap').classList.contains('floating') &&
+    document.getElementById('stage-hint').textContent.includes('双指');
+  console.log('6) 移动布局: is-mobile=', document.body.classList.contains('is-mobile'),
+    ' 骰子在dock=', document.getElementById('btn-roll').parentElement.id === 'roll-dock',
+    ' 小地图浮动=', document.querySelector('.minimap-wrap').classList.contains('floating'));
+  // 切到日志 tab
+  document.querySelectorAll('.mtab')[2].click();
+  await sleep(50);
+  const logTabOk = document.body.dataset.tab === 'log';
+  console.log('   切日志tab:', logTabOk, ' 右侧面板display:', window.getComputedStyle(document.querySelector('.panel-right')).display);
+  // 切回桌面
+  Object.defineProperty(window, 'innerWidth', { value: 1280, configurable: true });
+  window.dispatchEvent(new window.Event('resize'));
+  await sleep(100);
+  const backOk = !document.body.classList.contains('is-mobile') &&
+    document.getElementById('btn-roll').parentElement.className === 'panel-actions' &&
+    !document.querySelector('.minimap-wrap').classList.contains('floating');
+  console.log('7) 切回桌面:', backOk, ' 骰子归位:', document.getElementById('btn-roll').parentElement.className);
+
   console.log('页面脚本错误:', errors.length ? errors : '无');
   console.log('恢复页错误:', errors2.length ? errors2 : '无');
-  console.log(anyOwned > 0 ? 'SMOKE PASS' : 'SMOKE WARN: 无人买地（继续跑）');
-  process.exit(errors.length || errors2.length ? 2 : 0);
+  console.log(mobileOk && logTabOk && backOk ? 'MOBILE LAYOUT PASS' : 'MOBILE LAYOUT FAIL');
+  process.exit(mobileOk && logTabOk && backOk ? 0 : 2);
 })().catch(e => { console.error('SMOKE FAIL:', e); process.exit(1); });

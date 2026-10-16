@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>大发地产 · 经典大富翁</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -76,22 +76,36 @@
     <main class="stage-wrap">
       <canvas id="stage" class="stage"></canvas>
       <div id="tile-tip" class="tile-tip hidden"></div>
-      <div class="stage-hint">拖动平移 · 滚轮缩放 · 双击归位到当前玩家</div>
+      <div id="stage-hint" class="stage-hint">拖动平移 · 滚轮缩放 · 双击归位到当前玩家</div>
     </main>
 
     <!-- 右侧：小地图 + 日志 -->
     <aside class="panel panel-right">
-      <h3 class="panel-title">小地图</h3>
-      <div class="minimap-wrap">
-        <canvas id="minimap" class="minimap" width="260" height="260"></canvas>
-        <div class="minimap-hint">点击小地图快速移动视角</div>
-      </div>
-      <h3 class="panel-title">土地 & 建造 <span class="panel-sub">(点击自己地块建房)</span></h3>
-      <div id="estate-list" class="estate-list"></div>
-      <h3 class="panel-title">事件日志</h3>
-      <div id="log-box" class="log-box"></div>
+      <section class="sec-mini">
+        <h3 class="panel-title">小地图</h3>
+        <div class="minimap-wrap">
+          <canvas id="minimap" class="minimap" width="260" height="260"></canvas>
+          <div class="minimap-hint">点击小地图快速移动视角</div>
+        </div>
+      </section>
+      <section class="sec-map">
+        <h3 class="panel-title">土地 & 建造 <span class="panel-sub">(点击自己地块建房)</span></h3>
+        <div id="estate-list" class="estate-list"></div>
+      </section>
+      <section class="sec-log">
+        <h3 class="panel-title">事件日志</h3>
+        <div id="log-box" class="log-box"></div>
+      </section>
     </aside>
   </div>
+
+  <!-- 移动端：底部标签栏 + 悬浮骰子按钮 -->
+  <nav id="mobile-tabs" class="mobile-tabs">
+    <button class="mtab active" data-tab="players">👥 玩家</button>
+    <button class="mtab" data-tab="map">🗺 地产</button>
+    <button class="mtab" data-tab="log">📜 日志</button>
+  </nav>
+  <div id="roll-dock" class="roll-dock"></div>
 </div>
 
 <!-- ====== 事件弹窗（购买 / 出狱 / 卡片 / 结算 / 游戏结束） ====== -->

@@ -163,6 +163,26 @@ stage.addEventListener('wheel', e => {
 }, { passive: false });
 stage.addEventListener('dblclick', () => { centerOnCurrent(); });
 
+/* 双指缩放（移动端） */
+let pinch = null;
+function touchDist(e) {
+  const a = e.touches[0], b = e.touches[1];
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+}
+stage.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) pinch = { d: touchDist(e) };
+}, { passive: true });
+stage.addEventListener('touchmove', e => {
+  if (pinch && e.touches.length === 2) {
+    e.preventDefault();
+    const d = touchDist(e);
+    view.tz = clamp(view.tz * (d / pinch.d), 0.35, 2.2);
+    pinch.d = d;
+    view.follow = false;
+  }
+}, { passive: false });
+stage.addEventListener('touchend', e => { if (e.touches.length < 2) pinch = null; });
+
 const mouse = { x: -999, y: -999 };
 
 function screenToBoard(sx, sy) {
@@ -1212,6 +1232,49 @@ function startGame(cfg) {
   }
 }
 
+/* ---------- 移动端布局 ---------- */
+const MOBILE_MAX = 860;
+const rollDock = $('roll-dock');
+const rollActions = document.querySelector('.panel-actions');
+const stageWrap = document.querySelector('.stage-wrap');
+const panelRight = document.querySelector('.panel-right');
+const minimapWrap = document.querySelector('.minimap-wrap');
+let curTab = 'players';
+
+function isMobile() { return window.innerWidth <= MOBILE_MAX; }
+
+function setTab(t) {
+  curTab = t;
+  document.querySelectorAll('.mtab').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  document.body.dataset.tab = t;
+}
+
+function applyMobileLayout() {
+  const mobile = isMobile();
+  document.body.classList.toggle('is-mobile', mobile);
+  const rollBtn = $('btn-roll');
+  if (mobile) {
+    setTab(curTab);
+    // 骰子按钮移入底部悬浮 dock
+    if (rollBtn && rollDock && rollBtn.parentElement !== rollDock) rollDock.appendChild(rollBtn);
+    // 小地图浮动到舞台右上角
+    if (minimapWrap && stageWrap && minimapWrap.parentElement !== stageWrap) {
+      minimapWrap.classList.add('floating');
+      stageWrap.appendChild(minimapWrap);
+    }
+    $('stage-hint').textContent = '拖动平移 · 双指缩放 · 双击归位';
+  } else {
+    if (rollBtn && rollActions && rollBtn.parentElement !== rollActions) rollActions.appendChild(rollBtn);
+    if (minimapWrap && panelRight && minimapWrap.parentElement !== panelRight) {
+      minimapWrap.classList.remove('floating');
+      panelRight.insertBefore(minimapWrap, panelRight.firstChild);
+    }
+    $('stage-hint').textContent = '拖动平移 · 滚轮缩放 · 双击归位到当前玩家';
+    document.body.dataset.tab = '';
+  }
+  resizeStage();
+}
+
 /* ---------- 启动 ---------- */
 let booted = false;
 function boot() {
@@ -1230,6 +1293,9 @@ function boot() {
     maybeAI();
   };
   $('btn-roll').onclick = onRoll;
+  document.querySelectorAll('.mtab').forEach(b => { b.onclick = () => setTab(b.dataset.tab); });
+  window.addEventListener('resize', applyMobileLayout);
+  applyMobileLayout();
   initMenu();
   buildSetup();
   resizeStage();

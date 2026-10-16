@@ -295,3 +295,83 @@ html, body {
 }
 .menu-item:hover { background: rgba(255,255,255,.1); }
 .menu-close { text-align: center; color: #9db3a4; }
+
+/* ============================================================
+   移动端布局（≤860px）：舞台在上 + 底部标签页 + 悬浮骰子按钮
+   ============================================================ */
+.mobile-tabs, .roll-dock { display: none; }
+
+body.is-mobile .mobile-tabs {
+  display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  background: linear-gradient(180deg, #2a3f31, #1d2b22);
+  border-top: 2px solid #0f1a12;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.mtab {
+  flex: 1; padding: 12px 0 11px; background: none; border: none; cursor: pointer;
+  color: #9db3a4; font-size: 12px; font-weight: 700; font-family: inherit; letter-spacing: 1px;
+}
+.mtab.active { color: #ffd76a; box-shadow: inset 0 3px 0 #ffd76a; background: rgba(201,162,39,.08); }
+
+body.is-mobile .roll-dock {
+  display: block; position: fixed; right: 12px; bottom: calc(58px + env(safe-area-inset-bottom, 0px)); z-index: 41;
+}
+body.is-mobile .roll-dock .btn-roll { padding: 14px 26px; font-size: 16px; border-radius: 999px; }
+
+@media (max-width: 860px) {
+  .app { height: 100dvh; }
+  .topbar { height: 48px; padding: 0 10px; gap: 8px; }
+  .brand-name { font-size: 15px; letter-spacing: 1px; }
+  .brand-logo { font-size: 19px; }
+  .turn-banner { font-size: 12px; letter-spacing: 0; }
+  .turn-dot { width: 10px; height: 10px; }
+
+  .layout { flex-direction: column; overflow-y: auto; padding-bottom: 64px; -webkit-overflow-scrolling: touch; }
+  .panel { width: 100%; border: none; border-top: 2px solid #0f1a12; padding: 10px 12px; }
+  .panel-left, .panel-right { display: none; }
+  body[data-tab="players"] .panel-left { display: flex; }
+  body[data-tab="map"] .panel-right,
+  body[data-tab="log"] .panel-right { display: flex; }
+  body[data-tab="log"] .sec-mini,
+  body[data-tab="log"] .sec-map { display: none; }
+  body[data-tab="map"] .sec-log { display: none; }
+
+  .stage-wrap { order: -1; height: 46vh; min-height: 270px; flex: none; }
+  .stage { touch-action: none; }
+  .stage-hint { font-size: 10px; left: 8px; bottom: 6px; padding: 3px 8px; }
+
+  /* 玩家列表：横向滑动卡片 */
+  .player-list { flex-direction: row; overflow-x: auto; gap: 8px; padding-bottom: 4px; }
+  .pcard { min-width: 190px; flex: none; padding: 7px 9px; }
+  .pcard.current::after { content: "TA"; right: 6px; }
+  .pcard-name { font-size: 13px; }
+  .pcard-cash { font-size: 13px; }
+  .panel-actions { display: none; }   /* 骰子按钮移入底部悬浮 dock */
+  .quick-stats { margin-top: 2px; }
+
+  /* 小地图浮动到舞台右上角 */
+  .minimap-wrap.floating {
+    position: absolute; top: 8px; right: 8px; z-index: 15; width: 96px;
+  }
+  .minimap-wrap.floating .minimap { width: 96px !important; height: 96px !important; border-width: 1.5px; }
+  .minimap-wrap.floating .minimap-hint { display: none; }
+
+  .estate-list { max-height: 30vh; }
+  .log-box { max-height: calc(100vh - 300px); min-height: 120px; }
+
+  /* 弹窗 & 设置页 */
+  .setup-box { padding: 22px 16px 18px; width: 94vw; }
+  .game-title { font-size: 22px; letter-spacing: 3px; }
+  .setup-sub { font-size: 12px; margin-bottom: 14px; }
+  .setup-row { gap: 10px; margin-bottom: 12px; }
+  .player-configs { gap: 8px; margin-bottom: 14px; }
+  .pconf { grid-template-columns: 30px 1fr 86px; padding: 8px 10px; }
+  .pconf .token-preview { width: 30px; height: 30px; font-size: 15px; }
+  .pconf input.pname { font-size: 14px; }
+  .setup-actions { flex-direction: column; gap: 10px; }
+  .btn-big { width: 100%; }
+  .resume-box { padding: 26px 20px 22px; }
+  .dlg-actions { flex-direction: column; gap: 10px; }
+  .dlg-actions .btn { width: 100%; }
+  .menu-drawer { top: 48px; }
+}
